@@ -1,40 +1,72 @@
 package com.example.appflow.ui.screens
 
-import android.util.Log
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.appflow.model.Note
+import com.example.appflow.ui.viewmodel.NoteViewModel
 import com.example.appflow.utils.safePopBackStack
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNoteScreen(navController: NavController) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Add Note", style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-        Button(onClick = {
-            navController.safePopBackStack()
-            Log.d("Navigation","Add Note to Home")
-        }) {
-            Text(
-                text = "Save"
+fun AddNoteScreen(navController: NavController, viewModel: NoteViewModel) {
+    var title by remember { mutableStateOf("") }
+    var content by remember { mutableStateOf("") }
+
+    BackHandler {
+        navController.safePopBackStack()
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("Add Note") })
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Title") },
+                modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = content,
+                onValueChange = { content = it },
+                label = { Text("Content") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    if (title.isNotEmpty() && content.isNotEmpty()) {
+                        viewModel.addNote(
+                            Note(
+                                id = UUID.randomUUID().toString(),
+                                title = title,
+                                content = content
+                            )
+                        )
+                        navController.safePopBackStack()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Save Note")
+            }
         }
     }
 }
