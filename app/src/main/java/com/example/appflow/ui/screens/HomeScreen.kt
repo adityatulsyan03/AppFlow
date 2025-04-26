@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,13 +18,18 @@ import androidx.navigation.NavController
 import com.example.appflow.model.Note
 import com.example.appflow.ui.navigator.Routes
 import com.example.appflow.ui.state.UiState
+import com.example.appflow.ui.viewmodel.LoginViewModel
 import com.example.appflow.ui.viewmodel.NoteViewModel
 import com.example.appflow.utils.safeNavigateOnce
 import com.example.appflow.utils.safePopBackStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController, viewModel: NoteViewModel) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: NoteViewModel,
+    loginViewModel: LoginViewModel
+) {
     val state = viewModel.notes.collectAsState()
 
     BackHandler {
@@ -32,7 +38,19 @@ fun HomeScreen(navController: NavController, viewModel: NoteViewModel) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("SmartNotes") })
+            TopAppBar(
+                title = { Text("SmartNotes") },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            loginViewModel.logout()
+                            navController.safeNavigateOnce(Routes.LOGIN)
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "")
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {

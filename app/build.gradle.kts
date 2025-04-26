@@ -2,6 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    // Add the Google services Gradle plugin
+    id("com.google.gms.google-services")
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")  // <-- ADD THIS
+
 }
 
 android {
@@ -59,4 +64,21 @@ dependencies {
 
     //navigation
     implementation(libs.androidx.navigation.compose)
+
+    // Import the Firebase BoM
+    implementation(platform(libs.firebase.bom))
+
+    // When using the BoM, don't specify versions in Firebase dependencies
+    implementation(libs.firebase.analytics)
+
+    //Firebase Auth
+    implementation(libs.firebase.auth)
+
+    // Hilt Core
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+
+    // Navigation Compose Hilt
+    implementation(libs.androidx.hilt.navigation.compose)
+
 }

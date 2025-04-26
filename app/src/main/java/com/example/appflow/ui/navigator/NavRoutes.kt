@@ -9,4 +9,6 @@ sealed class Screen(val route: String) {
     data object EditNote : Screen("edit/{noteId}") {
         fun createRoute(noteId: String) = "edit/$noteId"
     }
+    data object Register : Screen("register")
+    data object Login : Screen("login")
 }
