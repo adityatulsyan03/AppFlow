@@ -20,17 +20,18 @@ class LoginViewModel @Inject constructor(
     private val _registerState = MutableStateFlow<Boolean?>(null)
     val registerState: StateFlow<Boolean?> = _registerState
 
-    private val _loginError = MutableStateFlow<String?>(null)
-    val loginError: StateFlow<String?> = _loginError
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
             val result = authManager.login(email, password)
             if (result.isSuccess) {
                 _loginState.value = true
+                _errorMessage.value=null
             } else {
                 _loginState.value = false
-                _loginError.value = result.exceptionOrNull()?.localizedMessage
+                _errorMessage.value = result.exceptionOrNull()?.localizedMessage
             }
         }
     }
@@ -40,9 +41,10 @@ class LoginViewModel @Inject constructor(
             val result = authManager.register(email, password)
             if (result.isSuccess) {
                 _registerState.value = true
+                _errorMessage.value=null
             } else {
                 _registerState.value = false
-                _loginError.value = result.exceptionOrNull()?.localizedMessage
+                _errorMessage.value = result.exceptionOrNull()?.localizedMessage
             }
         }
     }
