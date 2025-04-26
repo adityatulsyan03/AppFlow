@@ -19,10 +19,7 @@ class NoteViewModel : ViewModel() {
     }
 
     private fun loadDummyNotes() {
-        val dummyNotes = listOf(
-            Note("1", "Meeting Notes", "Project sync at 5 PM"),
-            Note("2", "Grocery List", "Milk, Eggs, Coffee")
-        )
+        val dummyNotes = emptyList<Note>()
         _notes.value = UiState.Success(dummyNotes)
     }
 
@@ -34,4 +31,22 @@ class NoteViewModel : ViewModel() {
         val current = (_notes.value as? UiState.Success)?.data ?: emptyList()
         _notes.value = UiState.Success(current + note)
     }
+
+    fun deleteNote(id: String){
+        val notes = (_notes.value as? UiState.Success)?.data ?: emptyList()
+        val filterNotes = notes.filter {
+            it.id != id
+        }
+        _notes.value = UiState.Success(filterNotes)
+    }
+
+    fun updateNote(updatedNote: Note) {
+        val notes = (_notes.value as? UiState.Success)?.data ?: emptyList()
+        val updatedNotes = notes.map { note ->
+            if (note.id == updatedNote.id) updatedNote else note
+        }
+        _notes.value = UiState.Success(updatedNotes)
+        _selectedNote.value = updatedNote
+    }
+
 }

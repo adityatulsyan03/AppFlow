@@ -5,9 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -42,13 +45,26 @@ fun HomeScreen(navController: NavController, viewModel: NoteViewModel) {
         Box(modifier = Modifier.padding(padding)) {
             when (val uiState = state.value) {
                 is UiState.Loading -> CircularProgressIndicator()
-                is UiState.Success -> NoteList(
-                    notes = uiState.data,
-                    onNoteClick = {
-                        viewModel.selectNote(it)
-                        navController.safeNavigateOnce(Routes.NOTE_DETAIL)
+                is UiState.Success ->
+                    if (uiState.data.isNotEmpty()){
+                        NoteList(
+                            notes = uiState.data,
+                            onNoteClick = {
+                                viewModel.selectNote(it)
+                                navController.safeNavigateOnce(Routes.NOTE_DETAIL)
+                            },
+                            onNoteDeleteClick = {
+                                viewModel.deleteNote(it)
+                            }
+                        )
+                    }else{
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            Text("No note selected")
+                        }
                     }
-                )
                 is UiState.Error -> Text("Error: ${uiState.message}")
             }
         }
@@ -56,24 +72,34 @@ fun HomeScreen(navController: NavController, viewModel: NoteViewModel) {
 }
 
 @Composable
-fun NoteList(notes: List<Note>, onNoteClick: (Note) -> Unit) {
+fun NoteList(notes: List<Note>, onNoteClick: (Note) -> Unit, onNoteDeleteClick: (String) -> Unit) {
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         items(notes) { note ->
-            NoteItem(note = note, onClick = { onNoteClick(note) })
+            NoteItem(note = note, onClick = { onNoteClick(note) }, onDelete = {onNoteDeleteClick(note.id)})
             Divider()
         }
     }
 }
 
 @Composable
-fun NoteItem(note: Note, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(8.dp)
-    ) {
-        Text(text = note.title, style = MaterialTheme.typography.titleMedium)
-        Text(text = note.content, style = MaterialTheme.typography.bodyMedium)
+fun NoteItem(note: Note, onClick: () -> Unit, onDelete: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onClick() }
+                .padding(8.dp)
+        ) {
+            Text(text = note.title, style = MaterialTheme.typography.titleMedium)
+            Text(text = note.content, style = MaterialTheme.typography.bodyMedium)
+        }
+        IconButton(
+            onClick = onDelete
+        ) {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = "")
+        }
     }
 }

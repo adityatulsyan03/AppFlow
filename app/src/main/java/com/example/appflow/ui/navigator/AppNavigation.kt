@@ -15,6 +15,7 @@ object Routes {
     const val HOME = "home"
     const val ADD_NOTE = "add_note"
     const val NOTE_DETAIL = "note_detail"
+    const val EDIT_NOTE = "edit_note"
 }
 
 @Composable
@@ -34,6 +35,9 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
         }
         composable(Routes.NOTE_DETAIL) {
             NoteDetailScreen(navController,viewModel)
+        }
+        composable(Routes.EDIT_NOTE) {
+            EditNoteScreen(navController,viewModel)
         }
     }
 }

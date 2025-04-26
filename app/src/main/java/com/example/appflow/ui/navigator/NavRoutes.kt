@@ -6,4 +6,7 @@ sealed class Screen(val route: String) {
     data object NoteDetail : Screen("detail/{noteId}") {
         fun createRoute(noteId: String) = "detail/$noteId"
     }
+    data object EditNote : Screen("edit/{noteId}") {
+        fun createRoute(noteId: String) = "edit/$noteId"
+    }
 }
