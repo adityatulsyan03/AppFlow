@@ -20,6 +20,7 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val registerState by loginViewModel.registerState.collectAsState()
+    val errorMessage by loginViewModel.errorMessage.collectAsState()
 
     LaunchedEffect(registerState) {
         if (registerState == true) {
@@ -57,6 +58,14 @@ fun RegisterScreen(
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth()
             )
+            // Show error if any
+            if (!errorMessage.isNullOrEmpty()) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
@@ -69,7 +78,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(
                 onClick = {
-                    navController.popBackStack() // Go back to Login screen
+                    navController.popBackStack()
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {

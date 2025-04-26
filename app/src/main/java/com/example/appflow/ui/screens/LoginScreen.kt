@@ -7,7 +7,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.appflow.ui.viewmodel.LoginViewModel
 import com.example.appflow.ui.navigator.Screen
@@ -21,6 +20,7 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val loginState by loginViewModel.loginState.collectAsState()
+    val errorMessage by loginViewModel.errorMessage.collectAsState()
 
     LaunchedEffect(loginState) {
         if (loginState == true) {
@@ -58,6 +58,13 @@ fun LoginScreen(
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth()
             )
+            if (!errorMessage.isNullOrEmpty()) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
