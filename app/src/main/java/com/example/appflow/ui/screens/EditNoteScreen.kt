@@ -50,7 +50,7 @@ fun EditNoteScreen(navController: NavController, viewModel: NoteViewModel) {
                 }
             ) {
                 Text("Save")
-            }
+            }   
         }
     ) { padding ->
         Column(
