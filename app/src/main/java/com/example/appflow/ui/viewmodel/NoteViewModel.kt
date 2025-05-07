@@ -24,23 +24,25 @@ class NoteViewModel @Inject constructor(
     private val _selectedNote = MutableStateFlow<Note?>(null)
     val selectedNote: StateFlow<Note?> = _selectedNote
 
-    fun loadNotes(email: String) {
+    fun observeNotes(email: String) {
         viewModelScope.launch {
-            _notes.value = noteRepository.getNotes(email)
+            noteRepository.getNotesRealtime(email).collect {
+                _notes.value = it
+            }
         }
     }
 
     fun addNote(note: Note, email: String) {
         viewModelScope.launch {
             val result = noteRepository.addNote(note, email)
-            if (result is UiState.Success) loadNotes(email)
+            if (result is UiState.Success) observeNotes(email)
         }
     }
 
     fun deleteNote(id: String, email: String) {
         viewModelScope.launch {
             val result = noteRepository.deleteNote(id, email)
-            if (result is UiState.Success) loadNotes(email)
+            if (result is UiState.Success) observeNotes(email)
         }
     }
 
@@ -49,7 +51,7 @@ class NoteViewModel @Inject constructor(
             when (val result = noteRepository.updateNote(note, email)) {
                 is UiState.Success -> {
                     _selectedNote.value = result.data
-                    loadNotes(email)
+                    observeNotes(email)
                 }
                 is UiState.Error -> {
                     Log.d("Update Note", "Error: ${result.message}")

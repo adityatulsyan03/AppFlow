@@ -39,7 +39,7 @@ fun HomeScreen(
 
     LaunchedEffect(email) {
         if (!email.isNullOrEmpty()) {
-            viewModel.loadNotes(email!!)
+            viewModel.observeNotes(email!!)
         }
     }
 
