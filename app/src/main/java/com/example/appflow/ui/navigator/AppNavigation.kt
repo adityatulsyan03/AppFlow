@@ -38,13 +38,13 @@ fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifie
             HomeScreen(navController, viewModel, loginViewModel)
         }
         composable(Routes.ADD_NOTE) {
-            AddNoteScreen(navController, viewModel)
+            AddNoteScreen(navController, viewModel, loginViewModel)
         }
         composable(Routes.NOTE_DETAIL) {
             NoteDetailScreen(navController,viewModel)
         }
         composable(Routes.EDIT_NOTE) {
-            EditNoteScreen(navController,viewModel)
+            EditNoteScreen(navController,viewModel, loginViewModel)
         }
         composable(Routes.REGISTER) {
             RegisterScreen(navController,loginViewModel)

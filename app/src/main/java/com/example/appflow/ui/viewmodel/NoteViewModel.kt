@@ -1,12 +1,22 @@
 package com.example.appflow.ui.viewmodel
 
+import android.util.Log
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import com.example.appflow.model.Note
+import androidx.lifecycle.viewModelScope
+import com.example.appflow.data.model.Note
+import com.example.appflow.data.repo.NoteRepository
 import com.example.appflow.ui.state.UiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class NoteViewModel : ViewModel() {
+@HiltViewModel
+class NoteViewModel @Inject constructor(
+    private val noteRepository: NoteRepository
+) : ViewModel() {
 
     private val _notes = MutableStateFlow<UiState<List<Note>>>(UiState.Loading)
     val notes: StateFlow<UiState<List<Note>>> = _notes
@@ -14,39 +24,42 @@ class NoteViewModel : ViewModel() {
     private val _selectedNote = MutableStateFlow<Note?>(null)
     val selectedNote: StateFlow<Note?> = _selectedNote
 
-    init {
-        loadDummyNotes()
+    fun loadNotes(email: String) {
+        viewModelScope.launch {
+            _notes.value = noteRepository.getNotes(email)
+        }
     }
 
-    private fun loadDummyNotes() {
-        val dummyNotes = emptyList<Note>()
-        _notes.value = UiState.Success(dummyNotes)
+    fun addNote(note: Note, email: String) {
+        viewModelScope.launch {
+            val result = noteRepository.addNote(note, email)
+            if (result is UiState.Success) loadNotes(email)
+        }
+    }
+
+    fun deleteNote(id: String, email: String) {
+        viewModelScope.launch {
+            val result = noteRepository.deleteNote(id, email)
+            if (result is UiState.Success) loadNotes(email)
+        }
+    }
+
+    fun updateNote(note: Note, email: String) {
+        viewModelScope.launch {
+            when (val result = noteRepository.updateNote(note, email)) {
+                is UiState.Success -> {
+                    _selectedNote.value = result.data
+                    loadNotes(email)
+                }
+                is UiState.Error -> {
+                    Log.d("Update Note", "Error: ${result.message}")
+                }
+                else -> Unit
+            }
+        }
     }
 
     fun selectNote(note: Note) {
         _selectedNote.value = note
     }
-
-    fun addNote(note: Note) {
-        val current = (_notes.value as? UiState.Success)?.data ?: emptyList()
-        _notes.value = UiState.Success(current + note)
-    }
-
-    fun deleteNote(id: String){
-        val notes = (_notes.value as? UiState.Success)?.data ?: emptyList()
-        val filterNotes = notes.filter {
-            it.id != id
-        }
-        _notes.value = UiState.Success(filterNotes)
-    }
-
-    fun updateNote(updatedNote: Note) {
-        val notes = (_notes.value as? UiState.Success)?.data ?: emptyList()
-        val updatedNotes = notes.map { note ->
-            if (note.id == updatedNote.id) updatedNote else note
-        }
-        _notes.value = UiState.Success(updatedNotes)
-        _selectedNote.value = updatedNote
-    }
-
 }
