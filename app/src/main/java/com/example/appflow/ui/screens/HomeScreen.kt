@@ -1,5 +1,6 @@
 package com.example.appflow.ui.screens
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,12 +11,14 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.appflow.model.Note
+import com.example.appflow.data.model.Note
 import com.example.appflow.ui.navigator.Routes
 import com.example.appflow.ui.state.UiState
 import com.example.appflow.ui.viewmodel.LoginViewModel
@@ -30,7 +33,15 @@ fun HomeScreen(
     viewModel: NoteViewModel,
     loginViewModel: LoginViewModel
 ) {
+    val email by loginViewModel.currentUser.collectAsState()
     val state = viewModel.notes.collectAsState()
+
+
+    LaunchedEffect(email) {
+        if (!email.isNullOrEmpty()) {
+            viewModel.loadNotes(email!!)
+        }
+    }
 
     BackHandler {
         navController.safePopBackStack()
@@ -62,9 +73,11 @@ fun HomeScreen(
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             when (val uiState = state.value) {
-                is UiState.Loading -> CircularProgressIndicator()
-                is UiState.Success ->
-                    if (uiState.data.isNotEmpty()){
+                is UiState.Loading -> {
+                    CircularProgressIndicator()
+                }
+                is UiState.Success -> {
+                    if (uiState.data.isNotEmpty()) {
                         NoteList(
                             notes = uiState.data,
                             onNoteClick = {
@@ -72,10 +85,10 @@ fun HomeScreen(
                                 navController.safeNavigateOnce(Routes.NOTE_DETAIL)
                             },
                             onNoteDeleteClick = {
-                                viewModel.deleteNote(it)
+                                viewModel.deleteNote(email = email ?: "", id = it)
                             }
                         )
-                    }else{
+                    } else {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -83,7 +96,10 @@ fun HomeScreen(
                             Text("No note selected")
                         }
                     }
-                is UiState.Error -> Text("Error: ${uiState.message}")
+                }
+                is UiState.Error -> {
+                    Text("Error: ${uiState.message}")
+                }
             }
         }
     }

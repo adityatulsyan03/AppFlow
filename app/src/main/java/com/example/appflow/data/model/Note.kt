@@ -1,4 +1,4 @@
-package com.example.appflow.model
+package com.example.appflow.data.model
 
 data class Note(
     val id: String = System.currentTimeMillis().toString(),

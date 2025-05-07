@@ -1,6 +1,6 @@
 package com.example.appflow.ui.state
 
-import com.example.appflow.model.Note
+import com.example.appflow.data.model.Note
 
 sealed class UiState<out T> {
     data object Loading : UiState<Nothing>()

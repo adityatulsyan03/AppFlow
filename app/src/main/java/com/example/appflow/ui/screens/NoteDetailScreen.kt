@@ -18,18 +18,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.appflow.ui.navigator.Routes
+import com.example.appflow.ui.viewmodel.LoginViewModel
 import com.example.appflow.ui.viewmodel.NoteViewModel
 import com.example.appflow.utils.safeNavigateOnce
 import com.example.appflow.utils.safePopBackStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteDetailScreen(navController: NavHostController, viewModel: NoteViewModel) {
-    val note = viewModel.selectedNote.collectAsState().value
+fun NoteDetailScreen(
+    navController: NavHostController,
+    viewModel: NoteViewModel
+) {
+    val note by viewModel.selectedNote.collectAsState()
 
     BackHandler {
         navController.safePopBackStack()

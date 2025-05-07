@@ -9,14 +9,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.appflow.ui.viewmodel.LoginViewModel
 import com.example.appflow.ui.viewmodel.NoteViewModel
 import com.example.appflow.utils.safePopBackStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditNoteScreen(navController: NavController, viewModel: NoteViewModel) {
+fun EditNoteScreen(
+    navController: NavController,
+    viewModel: NoteViewModel,
+    loginViewModel: LoginViewModel
+) {
     val selectedNote = viewModel.selectedNote.collectAsState().value
 
+    val email by loginViewModel.currentUser.collectAsState()
     var title by remember { mutableStateOf(selectedNote?.title.orEmpty()) }
     var content by remember { mutableStateOf(selectedNote?.content.orEmpty()) }
 
@@ -40,7 +46,8 @@ fun EditNoteScreen(navController: NavController, viewModel: NoteViewModel) {
                 onClick = {
                     if (selectedNote != null) {
                         viewModel.updateNote(
-                            selectedNote.copy(
+                            email = email?:"",
+                            note = selectedNote.copy(
                                 title = title,
                                 content = content
                             )
