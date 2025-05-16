@@ -1,99 +1,106 @@
 package com.example.appflow.data.repo
 
-import android.util.Log
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import com.example.appflow.data.clearAndInsert
 import com.example.appflow.data.model.Note
+import com.example.appflow.data.model.NoteDao
+import com.example.appflow.data.model.NoteEntity
+import com.example.appflow.data.toEntity
+import com.example.appflow.data.toNote
 import com.example.appflow.ui.state.UiState
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class NoteRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val dao: NoteDao
 ) {
 
-    // This function listens to Firestore changes in real-time
-    fun getNotesRealtime(email: String): Flow<UiState<List<Note>>> = callbackFlow {
-        // Listen to real-time changes in the notes collection
-        val listener = firestore.collection("users")
-            .document(email)
-            .collection("notes")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    // If error occurs, send it to the flow as an Error state
-                    trySend(UiState.Error(error.message ?: "Error loading notes"))
-                    return@addSnapshotListener
-                }
+    fun getNotes(email: String): Flow<UiState<List<Note>>> = flow {
+        emit(UiState.Loading)
 
-                // If snapshot is not null, map the documents to a list of Notes
-                snapshot?.let {
-                    val notes = it.map { doc ->
+        // Emit local notes first
+        val localNotes = dao.getAllNotes(email).map { it.map { it.toNote() } }
+        emitAll(localNotes.map { UiState.Success(it) })
+
+        // Start listening to Firestore
+        firestore.collection("users").document(email).collection("notes")
+            .addSnapshotListener { snapshot, error ->
+                if (error == null && snapshot != null) {
+                    val notes = snapshot.map {
                         Note(
-                            id = doc.id,
-                            title = doc.getString("title") ?: "",
-                            content = doc.getString("content") ?: ""
+                            id = it.id,
+                            title = it.getString("title") ?: "",
+                            content = it.getString("content") ?: ""
                         )
                     }
-                    // Send the list of notes to the flow as a Success state
-                    trySend(UiState.Success(notes))
+                    // Sync to local Room DB
+                    CoroutineScope(Dispatchers.IO).launch {
+                        dao.clearAndInsert(notes.map { it.toEntity() })
+                    }
                 }
             }
-
-        // Make sure to remove the listener when the flow is closed (e.g., when the screen is destroyed)
-        awaitClose { listener.remove() }
     }
 
-    // Function to add a note
     suspend fun addNote(note: Note, email: String): UiState<Unit> {
         return try {
+            val noteEntity = NoteEntity(
+                id = note.id,
+                title = note.title,
+                content = note.content,
+                userEmail = email
+            )
+            dao.insertNote(noteEntity) // save locally
             firestore.collection("users")
                 .document(email)
                 .collection("notes")
-                .add(note).await()
+                .document(note.id)
+                .set(note)
+                .await()
             UiState.Success(Unit)
         } catch (e: Exception) {
             UiState.Error(e.localizedMessage ?: "Failed to add note")
         }
     }
 
-    // Function to delete a note
     suspend fun deleteNote(id: String, email: String): UiState<Unit> {
         return try {
+            dao.deleteNoteById(id)
             firestore.collection("users")
                 .document(email)
                 .collection("notes")
-                .document(id).delete().await()
+                .document(id)
+                .delete()
+                .await()
             UiState.Success(Unit)
         } catch (e: Exception) {
             UiState.Error(e.localizedMessage ?: "Failed to delete note")
         }
     }
 
-    // Function to update a note
     suspend fun updateNote(note: Note, email: String): UiState<Note> {
         return try {
+            val noteEntity = NoteEntity(
+                id = note.id,
+                title = note.title,
+                content = note.content,
+                userEmail = email
+            )
+            dao.insertNote(noteEntity)
             firestore.collection("users")
                 .document(email)
                 .collection("notes")
-                .document(note.id).set(note).await()
-            // Re-fetch to ensure consistency after update
-            val updatedDoc = firestore.collection("users")
-                .document(email)
-                .collection("notes")
-                .document(note.id).get().await()
-            val updatedNote = Note(
-                id = updatedDoc.id,
-                title = updatedDoc.getString("title") ?: "",
-                content = updatedDoc.getString("content") ?: ""
-            )
-            UiState.Success(updatedNote)
+                .document(note.id)
+                .set(note)
+                .await()
+            UiState.Success(note)
         } catch (e: Exception) {
             UiState.Error(e.localizedMessage ?: "Failed to update note")
         }

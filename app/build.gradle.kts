@@ -82,4 +82,11 @@ dependencies {
     // Navigation Compose Hilt
     implementation(libs.androidx.hilt.navigation.compose)
 
+    // Room components
+    implementation(libs.androidx.room.runtime)
+    kapt(libs.room.compiler)
+
+    // Kotlin Extensions and Coroutines support for Room
+    implementation(libs.androidx.room.ktx)
+
 }

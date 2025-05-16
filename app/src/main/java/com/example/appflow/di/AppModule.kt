@@ -1,5 +1,9 @@
 package com.example.appflow.di
 
+import android.content.Context
+import androidx.room.Room
+import com.example.appflow.AppDatabase
+import com.example.appflow.data.model.NoteDao
 import com.example.appflow.data.repo.NoteRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -7,6 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -32,7 +37,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNoteRepository(firestore: FirebaseFirestore): NoteRepository {
-        return NoteRepository(firestore)
+    fun provideNoteRepository(firestore: FirebaseFirestore, dao: NoteDao): NoteRepository {
+        return NoteRepository(firestore,dao)
     }
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(context, AppDatabase::class.java, "appflow2_db").build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNoteDao(db: AppDatabase): NoteDao = db.noteDao()
 }
