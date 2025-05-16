@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.appflow.data.model.Note
 import com.example.appflow.ui.viewmodel.LoginViewModel
 import com.example.appflow.ui.viewmodel.NoteViewModel
 import com.example.appflow.utils.safePopBackStack
@@ -48,6 +49,13 @@ fun EditNoteScreen(
                         viewModel.updateNote(
                             email = email?:"",
                             note = selectedNote.copy(
+                                title = title,
+                                content = content
+                            )
+                        )
+                        viewModel.selectNote(
+                            Note(
+                                id = selectedNote.id,
                                 title = title,
                                 content = content
                             )

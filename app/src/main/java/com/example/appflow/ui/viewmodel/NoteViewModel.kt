@@ -52,6 +52,15 @@ class NoteViewModel @Inject constructor(
                 is UiState.Success -> {
                     _selectedNote.value = result.data
                     observeNotes(email)
+                    //If u want to fetch data from the observeNots only
+                    // First fetch updated notes list
+                    // Wait briefly to let Flow emit (dirty fix)
+//                    kotlinx.coroutines.delay(300)
+                    // Get latest version of the updated note
+//                    val updated = _notes.value.let {
+//                        if (it is UiState.Success) it.data.find { it.id == note.id } else null
+//                    }
+//                    _selectedNote.value = updated
                 }
                 is UiState.Error -> {
                     Log.d("Update Note", "Error: ${result.message}")
