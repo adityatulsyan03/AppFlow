@@ -21,4 +21,18 @@ interface NoteDao {
 
     @Query("DELETE FROM notes WHERE id = :noteId")
     suspend fun deleteNoteById(noteId: String)
+
+    @Query("DELETE FROM notes WHERE userEmail = :email")
+    suspend fun clearUserNotes(email: String)
+
+    suspend fun clearAndInsert(notes: List<NoteEntity>) {
+        if (notes.isNotEmpty()) {
+            notes.first().userEmail?.let { clearUserNotes(it) }
+            insertAll(notes)
+        }
+    }
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(notes: List<NoteEntity>)
+
 }

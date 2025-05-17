@@ -2,6 +2,7 @@ package com.example.appflow.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.work.WorkManager
 import com.example.appflow.AppDatabase
 import com.example.appflow.data.model.NoteDao
 import com.example.appflow.data.repo.NoteRepository
@@ -50,4 +51,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideNoteDao(db: AppDatabase): NoteDao = db.noteDao()
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
+    }
+
 }

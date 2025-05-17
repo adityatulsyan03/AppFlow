@@ -105,4 +105,17 @@ class NoteRepository @Inject constructor(
             UiState.Error(e.localizedMessage ?: "Failed to update note")
         }
     }
+
+    suspend fun syncNotes(email: String) {
+        val snapshot = firestore.collection("users").document(email).collection("notes").get().await()
+        val notes = snapshot.map {
+            Note(
+                id = it.id,
+                title = it.getString("title") ?: "",
+                content = it.getString("content") ?: ""
+            )
+        }
+        dao.clearAndInsert(notes.map { it.toEntity(email) })
+    }
+
 }

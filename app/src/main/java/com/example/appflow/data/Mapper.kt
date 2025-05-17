@@ -6,6 +6,14 @@ import com.example.appflow.data.model.NoteEntity
 
 fun Note.toEntity() = NoteEntity(id, title, content)
 fun NoteEntity.toNote() = Note(id, title, content)
+fun Note.toEntity(userEmail: String): NoteEntity {
+    return NoteEntity(
+        id = id,
+        title = title,
+        content = content,
+        userEmail = userEmail
+    )
+}
 
 suspend fun NoteDao.clearAndInsert(notes: List<NoteEntity>) {
     notes.forEach { insertNote(it) }

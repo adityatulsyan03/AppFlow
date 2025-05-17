@@ -1,8 +1,12 @@
 package com.example.appflow.ui.viewmodel
 
+import android.content.Context
+import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appflow.data.AuthManager
+import com.example.appflow.sync.WorkManagerUtil
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,5 +75,16 @@ class LoginViewModel @Inject constructor(
         _loginState.value = false
     }
 
-    fun isUserLoggedIn() = authManager.isUserLoggedIn()
+    fun isUserLoggedIn(context: Context,email: String): Boolean{
+        if(authManager.isUserLoggedIn()){
+            Log.d("Patta","WorkManager")
+            WorkManagerUtil.scheduleNoteSync(context, email)
+        }
+        return authManager.isUserLoggedIn()
+    }
+
+    fun getCurrentUserEmail(): String {
+        return FirebaseAuth.getInstance().currentUser?.email?:""
+    }
+
 }

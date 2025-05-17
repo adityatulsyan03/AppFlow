@@ -1,12 +1,15 @@
 package com.example.appflow.ui.navigator
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.appflow.sync.WorkManagerUtil
 import com.example.appflow.ui.screens.*
 import com.example.appflow.ui.viewmodel.NoteViewModel
 import com.example.appflow.ui.screens.AddNoteScreen
@@ -26,8 +29,19 @@ object Routes {
 fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
     val viewModel: NoteViewModel = viewModel()
     val loginViewModel: LoginViewModel = hiltViewModel()
+    val email = loginViewModel.getCurrentUserEmail()
+    val context = LocalContext.current
 
-    val startDestination = if (loginViewModel.isUserLoggedIn()) Routes.HOME else Routes.LOGIN
+    val startDestination = if (loginViewModel.isUserLoggedIn(context,email)) Routes.HOME else Routes.LOGIN
+
+//    if (loginViewModel.isUserLoggedIn()) {
+//        val email = loginViewModel.getCurrentUserEmail()
+//        LaunchedEffect(Unit) {
+//            if (email != "") {
+//                WorkManagerUtil.scheduleNoteSync(context, email)
+//            }
+//        }
+//    }
 
     NavHost(
         navController = navController,
